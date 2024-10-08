@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keypad Lock</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        .button {
+            width: 100px;
+            height: 100px;
+            font-size: 24px;
+            background-color: #ccc;
+            border: 2px solid #999;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #bbb;
+        }
+        .button-clear {
+            background-color: #007bff; /* Blue for clear */
+            color: white;
+        }
+        .button-delete {
+            background-color: #dc3545; /* Red for delete */
+            color: white;
+        }
+        .button-enter {
+            background-color: #28a745; /* Green for enter */
+            color: white;
+            font-weight: bold;
+        }
+        .button-clear:hover {
+            background-color: #0069d9;
+        }
+        .button-delete:hover {
+            background-color: #c82333;
+        }
+        .button-enter:hover {
+            background-color: #218838;
+        }
+        #message, #timer {
+            grid-column: span 3;
+            text-align: center;
+            font-size: 20px;
+        }
+        #message {
+            color: red;
+        }
+        #input-display {
+            grid-column: span 3;
+            text-align: center;
+            font-size: 30px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 2px solid #999;
+            color: #333;
+        }
+        #deployBtn {
+            display: none;
+            grid-column: span 3;
+            text-align: center;
+            background-color: green;
+            color: white;
+            padding: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        #deployBtn:hover {
+            background-color: darkgreen;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="keypad">
+    <div id="input-display">_ _ _ _ _ _</div> <!-- Input display for entered code -->
+    <div class="button" onclick="pressKey(1)">1</div>
+    <div class="button" onclick="pressKey(2)">2</div>
+    <div class="button" onclick="pressKey(3)">3</div>
+    <div class="button" onclick="pressKey(4)">4</div>
+    <div class="button" onclick="pressKey(5)">5</div>
+    <div class="button" onclick="pressKey(6)">6</div>
+    <div class="button" onclick="pressKey(7)">7</div>
+    <div class="button" onclick="pressKey(8)">8</div>
+    <div class="button" onclick="pressKey(9)">9</div>
+    <div class="button button-clear" onclick="clearInput()">Clear</div> <!-- Clear button -->
+    <div class="button button-delete" onclick="deleteLast()">Delete</div> <!-- Delete button -->
+    <div class="button button-enter" onclick="checkCode()">Enter</div> <!-- Enter button -->
+    <div id="message"></div>
+    <div id="deployBtn" onclick="deploy()">Deploy</div>
+    <div id="timer"></div>
+</div>
+
+<script>
+    const correctCode = "516122"; // Updated code
+    let enteredCode = "";
+    let attemptCount = 0;
+    let lockTime = 60;
+
+    // Function to update the input display
+    function updateDisplay() {
+        const display = document.getElementById('input-display');
+        display.textContent = enteredCode.split('').join(' ') + ' _'.repeat(6 - enteredCode.length);
+    }
+
+    function pressKey(num) {
+        if (document.getElementById('deployBtn').style.display === 'block') return; // If already deployed
+        if (attemptCount >= 5) return; // Keypad is disabled
+
+        if (enteredCode.length < 6) { // Prevent entering more than 6 digits
+            enteredCode += num;
+            updateDisplay();
+        }
+    }
+
+    function clearInput() {
+        enteredCode = "";
+        updateDisplay();
+    }
+
+    function deleteLast() {
+        enteredCode = enteredCode.slice(0, -1); // Remove the last digit
+        updateDisplay();
+    }
+
+    function checkCode() {
+        if (enteredCode.length < 6) return; // Only check if 6 digits are entered
+        
+        if (enteredCode === correctCode) {
+            document.getElementById('message').style.color = 'green';
+            document.getElementById('message').textContent = 'Correct Code. Access Granted.';
+            document.getElementById('deployBtn').style.display = 'block';
+        } else {
+            attemptCount++;
+            document.getElementById('message').style.color = 'red';
+            document.getElementById('message').textContent = 'Wrong Code. Access Denied.';
+            
+            if (attemptCount >= 5) {
+                document.getElementById('message').textContent = `Keypad disabled for ${lockTime} seconds.`;
+                startLockTimer(lockTime);
+                lockTime += 10; // Increase the lock time
+                attemptCount = 0; // Reset attempt count for next round
+            }
+        }
+        enteredCode = ""; // Reset entered code
+        updateDisplay();
+    }
+
+    function startLockTimer(seconds) {
+        let timeLeft = seconds;
+        const timerElement = document.getElementById('timer');
+        timerElement.textContent = `Retry in: ${timeLeft}s`;
+        
+        const timerInterval = setInterval(() => {
+            timeLeft--;
+            timerElement.textContent = `Retry in: ${timeLeft}s`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerElement.textContent = "";
+            }
+        }, 1000);
+    }
+
+    function deploy() {
+        document.body.innerHTML = `<iframe src="https://55gms.com/g"></iframe>`;
+    }
+</script>
+
+</body>
+</html>
